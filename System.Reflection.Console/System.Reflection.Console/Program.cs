@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Console.DataAccess.Model;
+using System.Reflection.Console.Dto;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,6 +61,22 @@ static class Program
 
             newObject.ConsolidatedPropertyValue = Program.ConsolidatePropertyValue(newObject, "Category,CategoryLevel,IsActive");
             Console.WriteLine(newObject.ConsolidatedPropertyValue);
+
+            var theKeyValueList = new List<KeyValuePair<string, object>>{
+                new KeyValuePair<string, object>("string value", "this is string"),
+                new KeyValuePair<string, object>("integer value", 3),
+                new KeyValuePair<string, object>("boolean value", true)
+            };
+
+            var theValueTypeList = GetObjectPropertyType(theKeyValueList);
+            foreach (var item in theValueTypeList)
+            {
+                Console.WriteLine(item);
+            }
+
+            WriteAllPropertyInfo<VariousProperties>();
+
+            Console.WriteLine("Get Property: " + GetPropertyAttribute<VariousProperties>(p => p.IsActive));
         }
         catch (Exception e)
         {
@@ -71,6 +90,18 @@ static class Program
         // Setup Dependency Injection
         var serviceProvider = new ServiceCollection()
             .BuildServiceProvider();
+    }
+
+    public static List<string> GetObjectPropertyType(List<KeyValuePair<string, object>> pairs)
+    {
+        var @return = new List<string>();
+        foreach (var item in pairs)
+        {
+            var itemType = item.Value.GetType();
+            @return.Add(itemType.Name.ToString());
+        }
+
+        return @return;
     }
 
     public static List<string> GetPropertyDetails<T>(T item)
@@ -116,5 +147,37 @@ static class Program
         }
 
         return result;
+    }
+
+    public static void WriteAllPropertyInfo<T>()
+    {
+        Console.WriteLine("List of Property: ");
+        PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        foreach (PropertyInfo prop in props)
+        {
+            Console.WriteLine("Property: " + prop.Name);
+            foreach (CustomAttributeData att in prop.CustomAttributes)
+            {
+                Console.WriteLine("\tAttribute: " + att.AttributeType.Name);
+                foreach (CustomAttributeNamedArgument arg in att.NamedArguments)
+                {
+                    Console.WriteLine("\t\t" + arg.MemberName + ": " + arg.TypedValue);
+                }
+            }
+        }
+    }
+
+    public static string GetPropertyAttribute<TType>(Expression<Func<TType, object>> property)
+    {
+        var body = property.Body;
+        if (body.NodeType == ExpressionType.Convert)
+            body = ((UnaryExpression)body).Operand;
+
+        if (body is not MemberExpression memberExpression)
+            throw new ArgumentException("Expression must be a property");
+
+        return memberExpression.Member
+            .GetCustomAttribute<JsonPropertyAttribute>()
+            .PropertyName;
     }
 }
