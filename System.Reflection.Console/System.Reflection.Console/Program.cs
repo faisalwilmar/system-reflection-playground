@@ -76,11 +76,12 @@ static class Program
 
             WriteAllPropertyInfo<VariousProperties>();
 
-            Console.WriteLine("GetPropertyAttribute: " + GetPropertyAttribute<VariousProperties>(p => p.Category));
+            Console.WriteLine("GetPropertyAttribute: " + GetPropertyAttribute<VariousProperties>(p => p.CurrentDateTime));
 
             Console.WriteLine("GetJsonPropertyAttribute: " + GetJsonPropertyAttribute<VariousProperties>("CurrentDateTime"));
 
             Console.WriteLine("GetPropertyInfoByJsonPropertyAttribute: " + GetPropertyInfoByJsonPropertyAttribute<VariousProperties>(GetJsonPropertyAttribute<VariousProperties>("CurrentDateTime")).Name);
+            Console.WriteLine("GetPropertyInfoByJsonPropertyAttribute: " + GetPropertyInfoByJsonPropertyAttribute<VariousProperties>("invalid"));
         }
         catch (Exception e)
         {
@@ -180,9 +181,11 @@ static class Program
         if (body is not MemberExpression memberExpression)
             throw new ArgumentException("Expression must be a property");
 
-        return memberExpression.Member
-            .GetCustomAttribute<JsonPropertyAttribute>()
-            .PropertyName;
+        var jsonPropertyAttribute = memberExpression.Member
+                .GetCustomAttribute<JsonPropertyAttribute>();
+        if (jsonPropertyAttribute == null) throw new ArgumentException("Model Property does not have JsonPropertyAttribute");
+
+        return jsonPropertyAttribute.PropertyName;
     }
 
     public static string GetJsonPropertyAttribute<T>(string propertyName)
@@ -210,6 +213,9 @@ static class Program
             });
         }
 
-        return (PropertyInfo)keyValueObjects.FirstOrDefault(p => p.Key == jsonPropertyName).Value;
+        var keyValObj = keyValueObjects.FirstOrDefault(p => p.Key == jsonPropertyName);
+        if (keyValObj == null) throw new ArgumentException("PropertyInfo for JsonPropertyName " + jsonPropertyName + " not found");
+
+        return (PropertyInfo)keyValObj.Value;
     }
 }
