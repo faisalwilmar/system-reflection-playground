@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace System.Reflection.Console.DataAccess.Model
 {
@@ -17,7 +18,7 @@ namespace System.Reflection.Console.DataAccess.Model
         [JsonProperty(PropertyName = "consolidatedPropertyValue")]
         public string ConsolidatedPropertyValue { get; set; }
 
-        //[Required]
+        [Required]
         [JsonProperty(PropertyName = "currentDateTime")]
         public DateTime CurrentDateTime { get; set; }
 
