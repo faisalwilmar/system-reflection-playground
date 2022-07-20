@@ -5,7 +5,7 @@ namespace System.Reflection.Console.DataAccess.Model
 {
     public class VariousProperties
     {
-        [JsonProperty(PropertyName = "category")]
+        [JsonProperty(PropertyName = "category", NullValueHandling = NullValueHandling.Ignore)]
         public string Category { get; set; }
 
         [JsonProperty(PropertyName = "categoryLevel")]
@@ -16,6 +16,10 @@ namespace System.Reflection.Console.DataAccess.Model
 
         [JsonProperty(PropertyName = "consolidatedPropertyValue")]
         public string ConsolidatedPropertyValue { get; set; }
+
+        //[Required]
+        [JsonProperty(PropertyName = "currentDateTime")]
+        public DateTime CurrentDateTime { get; set; }
 
         [JsonProperty(PropertyName = "categoryTags")]
         public List<Tag> CategoryTags { get; set; }

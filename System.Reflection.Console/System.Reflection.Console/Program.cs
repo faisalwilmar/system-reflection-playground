@@ -80,7 +80,7 @@ static class Program
 
             Console.WriteLine("Get Property Type 2: " + GetJsonPropertyAttribute<VariousProperties>("Category"));
 
-            Console.WriteLine("Get Property by Json Prop: " + GetPropertyInfoByJsonPropertyAttribute<VariousProperties>(GetJsonPropertyAttribute<VariousProperties>("ConsolidatedPropertyValue")).Name);
+            Console.WriteLine("Get Property by Json Prop: " + GetPropertyInfoByJsonPropertyAttribute<VariousProperties>(GetJsonPropertyAttribute<VariousProperties>("CurrentDateTime")).Name);
         }
         catch (Exception e)
         {
@@ -191,8 +191,8 @@ static class Program
         var customAtt = property.CustomAttributes.FirstOrDefault();
         if (customAtt == null) return null;
 
-        var namedArgument = customAtt.NamedArguments.FirstOrDefault();
-        return namedArgument.TypedValue.ToString();
+        var namedArgument = customAtt.NamedArguments.FirstOrDefault(p => p.MemberName == "PropertyName");
+        return namedArgument.TypedValue.ToString().Trim('"');
     }
 
     public static PropertyInfo GetPropertyInfoByJsonPropertyAttribute<T>(string jsonPropertyName)
