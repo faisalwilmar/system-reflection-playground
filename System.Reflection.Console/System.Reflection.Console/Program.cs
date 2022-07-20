@@ -77,6 +77,10 @@ static class Program
             WriteAllPropertyInfo<VariousProperties>();
 
             Console.WriteLine("Get Property: " + GetPropertyAttribute<VariousProperties>(p => p.IsActive));
+
+            Console.WriteLine("Get Property Type 2: " + GetJsonPropertyAttribute<VariousProperties>("Category"));
+
+            Console.WriteLine("Get Property by Json Prop: " + GetPropertyInfoByJsonPropertyAttribute<VariousProperties>(GetJsonPropertyAttribute<VariousProperties>("ConsolidatedPropertyValue")).Name);
         }
         catch (Exception e)
         {
@@ -179,5 +183,33 @@ static class Program
         return memberExpression.Member
             .GetCustomAttribute<JsonPropertyAttribute>()
             .PropertyName;
+    }
+
+    public static string GetJsonPropertyAttribute<T>(string propertyName)
+    {
+        var property = typeof(T).GetProperty(propertyName);
+        var customAtt = property.CustomAttributes.FirstOrDefault();
+        if (customAtt == null) return null;
+
+        var namedArgument = customAtt.NamedArguments.FirstOrDefault();
+        return namedArgument.TypedValue.ToString();
+    }
+
+    public static PropertyInfo GetPropertyInfoByJsonPropertyAttribute<T>(string jsonPropertyName)
+    {
+        var properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        List<KeyValueObject> keyValueObjects = new List<KeyValueObject>();
+
+        foreach (var property in properties)
+        {
+            var x = GetJsonPropertyAttribute<T>(property.Name);
+            keyValueObjects.Add(new KeyValueObject
+            {
+                Key = x,
+                Value = property
+            });
+        }
+
+        return (PropertyInfo)keyValueObjects.FirstOrDefault(p => p.Key == jsonPropertyName).Value;
     }
 }
